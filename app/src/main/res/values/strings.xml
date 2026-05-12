@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">VerifyBlind</string>
+
+    <!-- Boş Durum -->
+    <string name="empty_state_title">Henüz telefonunda kayıtlı bir kimliğin yok</string>
+    <string name="empty_state_desc">Sadece Cihazınızda, Tamamen Gizli</string>
+    <string name="btn_add_id">Kimlik Kartı Ekle</string>
+    <string name="link_how_it_works">Nasıl Çalışır?</string>
+
+    <!-- Cüzdan Durumu -->
+    <string name="wallet_active_title">Cüzdan Aktif</string>
+    <string name="btn_qr_login">QR ile Giriş Yap</string>
+    <string name="btn_delete_id">Kimliği Sil</string>
+
+    <!-- Nasıl Çalışır Diyaloğu -->
+    <string name="how_it_works_title">Sistem Nasıl Çalışır?</string>
+    <string name="how_it_works_desc">VerifyBlind, Sıfır Bilgi Kanıtı (Zero-Knowledge Proof) teknolojisi kullanır. Kimlik verileriniz sadece telefonunuzda şifreli saklanır ve sunucularımızda asla saklanmaz. Sadece kimliğinizin kriptografik kanıtını doğrularız.</string>
+
+    <!-- İşlem Geçmişi -->
+    <string name="history_action_registration">Kart Eklendi</string>
+    <string name="history_action_shared">Kimlik Paylaşıldı</string>
+    <string name="history_action_deleted">Kart Silindi</string>
+    <string name="history_action_restored">Yedek Geri Yüklendi</string>
+    <string name="history_desc_registration">Kimlik kartı başarıyla cihazınıza tanımlandı.</string>
+    <string name="history_desc_shared">Kimlik bilgileri güvenli bir şekilde paylaşıldı.</string>
+    <string name="history_desc_deleted">Kimlik kartı cihazdan silindi.</string>
+    <string name="history_desc_restored">İşlem geçmişi başarıyla geri yüklendi.</string>
+    <string name="history_desc_generic">İşlem başarıyla tamamlandı.</string>
+</resources>
