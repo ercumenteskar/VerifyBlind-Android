@@ -16,6 +16,7 @@ captures/
 *.keystore
 release/*.jks
 release/*.keystore
+release.bat
 
 # Log / compile artifacts
 build_log.txt
