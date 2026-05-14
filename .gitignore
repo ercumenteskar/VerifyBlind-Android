@@ -16,7 +16,6 @@ captures/
 *.keystore
 release/*.jks
 release/*.keystore
-google-services.json*
 
 # Log / compile artifacts
 build_log.txt
