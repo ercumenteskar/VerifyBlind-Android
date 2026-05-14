@@ -18,17 +18,9 @@ if (!versionPropsFile.exists()) {
 }
 versionProps.load(FileInputStream(versionPropsFile))
 
-var currentVersionCode = versionProps["versionCode"].toString().toInt()
-val isReleaseTask = gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+val currentVersionCode = versionProps["versionCode"].toString().toInt()
 
-if (isReleaseTask) {
-    currentVersionCode += 1
-    versionProps["versionCode"] = currentVersionCode.toString()
-    versionProps.store(FileOutputStream(versionPropsFile), "VerifyBlind Auto-generated Sequence")
-    println(">>> VerifyBlind: Bumping versionCode to $currentVersionCode for Release build")
-}
-
-val currentVersionName = "1.0.8"
+val currentVersionName = "1.0.9"
 
 android {
     namespace = "com.verifyblind.mobile"
