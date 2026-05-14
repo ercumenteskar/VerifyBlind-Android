@@ -104,7 +104,7 @@ data class PartnerRequest(
     @SerializedName("nonce") val nonce: String,
     @SerializedName("timestamp") val timestamp: Long,
     @SerializedName("callback_url") val callbackUrl: String,
-    @SerializedName("special_data") val specialData: com.google.gson.JsonElement?,
+    @SerializedName("additional_data") val specialData: com.google.gson.JsonElement?,
     @SerializedName("request_sign") val requestSign: String = "" // Partner's signature
 )
 

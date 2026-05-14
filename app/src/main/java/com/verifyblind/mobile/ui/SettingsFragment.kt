@@ -144,6 +144,11 @@ class SettingsFragment : Fragment() {
             findNavController().navigate(com.verifyblind.mobile.R.id.action_settings_to_help)
         }
 
+        // 10b. SSS
+        binding.cardFaq.setOnClickListener {
+            findNavController().navigate(com.verifyblind.mobile.R.id.action_settings_to_faq)
+        }
+
         // 10. Kartımı Engelle — kart varsa göster
         binding.cardBlockCard.setOnClickListener {
             confirmBlockCard()

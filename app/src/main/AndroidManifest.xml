@@ -22,12 +22,23 @@
         android:theme="@style/Theme.VerifyBlind"
         tools:targetApi="31">
         
+        <!-- Splash: uygulama girişi. Sadece process fresh-start'ta görünür. -->
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VerifyBlind"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             
             <!-- NFC Tech Dispatch -->

@@ -28,13 +28,7 @@ if (isReleaseTask) {
     println(">>> VerifyBlind: Bumping versionCode to $currentVersionCode for Release build")
 }
 
-val currentVersionName = "1.0.6"
-
-val gitCommit: String = try {
-    ProcessBuilder("git", "rev-parse", "HEAD")
-        .redirectErrorStream(true).start()
-        .inputStream.bufferedReader().readLine()?.trim() ?: "unknown"
-} catch (e: Exception) { "unknown" }
+val currentVersionName = "1.0.7"
 
 android {
     namespace = "com.verifyblind.mobile"
@@ -220,19 +214,28 @@ tasks.register("generateBuildInfo") {
     val assetsDir = file("src/main/assets")
     val outFile = assetsDir.resolve("build_info.json")
     outputs.file(outFile)
+    inputs.property("versionCode", currentVersionCode)
+    inputs.property("versionName", currentVersionName)
     doLast {
+        val vc = inputs.properties["versionCode"] as Int
+        val vn = inputs.properties["versionName"] as String
+        val gitCommit: String = try {
+            ProcessBuilder("git", "rev-parse", "HEAD")
+                .redirectErrorStream(true).start()
+                .inputStream.bufferedReader().readLine()?.trim() ?: "unknown"
+        } catch (e: Exception) { "unknown" }
         assetsDir.mkdirs()
         outFile.writeText(
             "{\n" +
-            "  \"version_code\": $currentVersionCode,\n" +
-            "  \"version_name\": \"$currentVersionName\",\n" +
+            "  \"version_code\": $vc,\n" +
+            "  \"version_name\": \"$vn\",\n" +
             "  \"git_commit\": \"$gitCommit\"\n" +
             "}"
         )
-        println(">>> VerifyBlind: build_info.json yazıldı (commit=$gitCommit, build=$currentVersionCode)")
+        println(">>> VerifyBlind: build_info.json yazıldı (commit=$gitCommit, build=$vc)")
     }
 }
 
 afterEvaluate {
-    tasks.findByName("mergeReleaseAssets")?.dependsOn("generateBuildInfo")
+    tasks.named("preBuild") { dependsOn("generateBuildInfo") }
 }

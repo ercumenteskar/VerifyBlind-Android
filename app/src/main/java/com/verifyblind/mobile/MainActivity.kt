@@ -6,7 +6,6 @@ import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
-
 import android.util.Base64
 import android.util.Log
 import android.widget.EditText
@@ -31,7 +30,6 @@ import com.verifyblind.mobile.nfc.PassportReader
 import com.verifyblind.mobile.ui.BiometricConsentBottomSheet
 import com.verifyblind.mobile.ui.ConsentBottomSheet
 import com.verifyblind.mobile.util.BiometricHelper
-import com.verifyblind.mobile.util.IntegrityManagerHelper
 import com.verifyblind.mobile.viewmodel.MainViewModel
 import android.Manifest
 import android.app.NotificationChannel
@@ -39,7 +37,6 @@ import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
-import com.google.gson.Gson
 import com.verifyblind.mobile.fcm.VBMessagingService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -175,11 +172,6 @@ class MainActivity : BaseActivity() {
 
         // Check for force update
         viewModel.checkAppUpdate()
-
-        // Prepare Google Play Integrity Standard Provider
-        lifecycleScope.launch(Dispatchers.IO) {
-            IntegrityManagerHelper.prepare(this@MainActivity)
-        }
 
         // Background Handshake
         lifecycleScope.launch {
@@ -1072,6 +1064,10 @@ class MainActivity : BaseActivity() {
 
     fun showHandshakeErrorWarning(onSuccess: (() -> Unit)? = null) {
         val (title, message) = viewModel.getHandshakeErrorMessage()
+        if (title == "Güvenlik Engeli") {
+            showSecurityBlockDialog()
+            return
+        }
         AlertDialog.Builder(this)
             .setTitle(title)
             .setMessage(message)
@@ -1087,6 +1083,28 @@ class MainActivity : BaseActivity() {
                 }
             }
             .setNegativeButton("İptal", null)
+            .show()
+    }
+
+    private fun showSecurityBlockDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Güvenlik Uyarısı")
+            .setMessage(
+                "Bu uygulama yalnızca Google Play Store üzerinden indirilerek kullanılabilir.\n\n" +
+                "Güvenlik nedeniyle diğer kaynaklardan yüklenen uygulamalar çalışmamaktadır."
+            )
+            .setPositiveButton("Google Play'e Git") { _, _ ->
+                val uri = android.net.Uri.parse("market://details?id=$packageName")
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, uri))
+                } catch (e: Exception) {
+                    startActivity(Intent(Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+                }
+                finish()
+            }
+            .setNegativeButton("Kapat") { _, _ -> finish() }
+            .setCancelable(false)
             .show()
     }
 
@@ -1287,4 +1305,5 @@ class MainActivity : BaseActivity() {
 
     val isHandshakeFailed: Boolean
         get() = viewModel.isHandshakeFailed
+
 }

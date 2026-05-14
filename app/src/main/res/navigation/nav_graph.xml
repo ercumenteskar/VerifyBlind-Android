@@ -44,7 +44,16 @@
         <action
             android:id="@+id/action_settings_to_help"
             app:destination="@id/nav_help" />
+        <action
+            android:id="@+id/action_settings_to_faq"
+            app:destination="@id/nav_faq_web" />
     </fragment>
+
+    <fragment
+        android:id="@+id/nav_faq_web"
+        android:name="com.verifyblind.mobile.ui.FaqWebFragment"
+        android:label="SSS"
+        tools:layout="@layout/fragment_faq_web" />
 
     <fragment
         android:id="@+id/nav_security_info"
