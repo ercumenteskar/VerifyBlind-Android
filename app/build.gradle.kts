@@ -64,7 +64,7 @@ android {
         debug {
             val useLocalApi = kimlikProps.getProperty("USE_LOCAL_API") == "true"
             val apiBaseUrl = if (useLocalApi)
-                kimlikProps.getProperty("API_BASE_URL_LOCAL") ?: ""
+                "http://192.168.1.113:5102/api/Verify/"
             else
                 kimlikProps.getProperty("API_BASE_URL") ?: ""
             buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
