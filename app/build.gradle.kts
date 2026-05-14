@@ -28,7 +28,7 @@ if (isReleaseTask) {
     println(">>> VerifyBlind: Bumping versionCode to $currentVersionCode for Release build")
 }
 
-val currentVersionName = "1.0.7"
+val currentVersionName = "1.0.8"
 
 android {
     namespace = "com.verifyblind.mobile"

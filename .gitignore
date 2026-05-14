@@ -31,4 +31,4 @@ Thumbs.db
 
 # Build-time generated asset (her build'de yeniden uretilir)
 app/src/main/assets/build_info.json
-
+BuildAndDeploy
