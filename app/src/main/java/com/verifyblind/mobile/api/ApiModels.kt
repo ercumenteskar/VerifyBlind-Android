@@ -164,8 +164,6 @@ data class KvkkBlockCardRequest(
 // --- Config ---
 data class AppConfigResponse(
     @SerializedName("minimum_android_version") val minimumAndroidVersion: String,
-    @SerializedName("latest_android_version") val latestAndroidVersion: String,
-    @SerializedName("force_update") val forceUpdate: Boolean,
     @SerializedName("store_url") val storeUrl: String,
     @SerializedName("environment") val environment: String? = null
 )

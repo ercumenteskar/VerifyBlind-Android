@@ -794,12 +794,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val response = RetrofitClient.api.getAppConfig()
                 if (response.isSuccessful && response.body() != null) {
                     val config = response.body()!!
-                    if (config.forceUpdate) {
-                        val currentVersion = com.verifyblind.mobile.BuildConfig.VERSION_NAME
-                        val isOutdated = isVersionOlder(currentVersion, config.minimumAndroidVersion)
-                        if (isOutdated) {
-                            _uiEvent.postValue(UiEvent.ForceUpdate(config.storeUrl))
-                        }
+                    val currentVersion = com.verifyblind.mobile.BuildConfig.VERSION_NAME
+                    if (isVersionOlder(currentVersion, config.minimumAndroidVersion)) {
+                        _uiEvent.postValue(UiEvent.ForceUpdate(config.storeUrl))
                     }
                 }
             } catch (e: Exception) {
