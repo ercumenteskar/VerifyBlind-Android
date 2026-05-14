@@ -8,6 +8,7 @@ import android.nfc.Tag
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
+import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -79,6 +80,13 @@ class MainActivity : BaseActivity() {
 
     // NFC progress animation job (20→90 over ~10s while reading)
     private var nfcProgressJob: kotlinx.coroutines.Job? = null
+
+    // Bildirim izni dialog'u açıkken altındaki butonların tıklanmasını engellemek için.
+    // Tap-jacking koruması: sistem dialog'u kapanırken sızan touch event'leri yutmak için
+    // callback'te 250ms gecikmeyle clear edilir.
+    @Volatile
+    var isPermissionRequestInFlight: Boolean = false
+        private set
 
     private val livenessLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
@@ -184,8 +192,12 @@ class MainActivity : BaseActivity() {
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { /* izin verildi/reddedildi — bildirimler yine de çalışır, sadece gösterilmez */ }
+    ) {
+        // Dialog kapandıktan sonra altta sızan touch event'lerini yutmak için kısa gecikme
+        window.decorView.postDelayed({ isPermissionRequestInFlight = false }, 250)
+    }
 
+    /** Bildirim kanalını oluşturur — UI göstermez, onCreate'te güvenle çağrılabilir. */
     private fun setupNotifications() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -196,12 +208,31 @@ class MainActivity : BaseActivity() {
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
                 .createNotificationChannel(channel)
         }
+    }
+
+    /**
+     * POST_NOTIFICATIONS iznini ister. onCreate'te DEĞİL, kart ekleme akışı
+     * tamamlandıktan sonra çağrılır — aksi halde sistem dialog'u wallet ekranındaki
+     * butonların üstüne gelip tap-through'a yol açıyordu.
+     */
+    private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
+                isPermissionRequestInFlight = true
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+    }
+
+    /**
+     * Bildirim izni dialog'u açık/yeni kapanmışken sızan touch event'lerini Activity
+     * sınırında yutar. Tek tek buton guard'larından daha güvenli — sızan event hangi
+     * view'a giderse gitsin click'e dönüşmeden tüketilir.
+     */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (isPermissionRequestInFlight) return true
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onResume() {
@@ -503,6 +534,8 @@ class MainActivity : BaseActivity() {
         binding.btnGoHome.setOnClickListener {
             stopNfcPulseAnimation()
             updateUiState()
+            // Kart ekleme akışı tamamlandı — bildirim iznini şimdi iste
+            requestNotificationPermissionIfNeeded()
         }
 
         setupKvkkCardAddSection()

@@ -43,16 +43,20 @@ class WalletFragment : Fragment() {
 
         binding.btnScanQr.setOnClickListener {
             val mainActivity = activity as? MainActivity ?: return@setOnClickListener
+            if (mainActivity.isPermissionRequestInFlight) return@setOnClickListener
             mainActivity.startScanFlow()
         }
 
         binding.btnAddId.setOnClickListener {
             val mainActivity = activity as? MainActivity ?: return@setOnClickListener
+            if (mainActivity.isPermissionRequestInFlight) return@setOnClickListener
             if (mainActivity.isHandshakeFailed) mainActivity.showHandshakeErrorWarning { mainActivity.startAddCardFlow() }
             else mainActivity.startAddCardFlow()
         }
 
         binding.cardTapOverlay.setOnClickListener {
+            val mainActivity = activity as? MainActivity ?: return@setOnClickListener
+            if (mainActivity.isPermissionRequestInFlight) return@setOnClickListener
             binding.btnScanQr.performClick()
         }
 
