@@ -1,9 +1,7 @@
 name: Mobile Release Build (Deterministic & Code Transparency)
 
 on:
-  push:
-    branches: [ "main" ] 
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -34,32 +32,16 @@ jobs:
       - name: Make scripts executable
         run: chmod +x gradlew
 
-      - name: Auto-increment versionCode
+      - name: Read Version Info
         run: |
-          CURRENT=$(grep versionCode app/version.properties | cut -d= -f2 | tr -d '[:space:]')
-          NEW=$((CURRENT + 1))
-          sed -i "s/versionCode=$CURRENT/versionCode=$NEW/" app/version.properties
-          echo "NEW_VERSION_CODE=$NEW" >> $GITHUB_ENV
-          echo "versionCode: $CURRENT → $NEW"
-
-      - name: Commit & push versionCode bump
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add app/version.properties
-          git commit -m "ci: bump versionCode to $NEW_VERSION_CODE [skip ci]"
-          git push
+          VERSION_CODE=$(grep versionCode app/version.properties | cut -d= -f2 | tr -d '[:space:]')
+          VERSION_NAME=$(grep -o 'currentVersionName = "[^"]*"' app/build.gradle.kts | cut -d'"' -f2)
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo ">>> Version: $VERSION_NAME (Build $VERSION_CODE)"
 
       - name: Build Unsigned AAB
         run: ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 --no-daemon
-
-      - name: Read Version Info
-        run: |
-          VERSION_NAME=$(grep -o 'currentVersionName = "[^"]*"' app/build.gradle.kts | cut -d'"' -f2)
-          echo "VERSION_CODE=$NEW_VERSION_CODE" >> $GITHUB_ENV
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo ">>> Version: $VERSION_NAME (Build $NEW_VERSION_CODE)"
 
       - name: Extract DEX Hashes & Generate dex-hashes.json
         run: |
@@ -117,7 +99,7 @@ jobs:
           echo "3. \`unzip -q base.apk \"*.dex\" -d dex && sha256sum dex/*.dex\` ile karşılaştırın" >> $GITHUB_STEP_SUMMARY
 
       - name: Create GitHub Release
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -133,6 +115,8 @@ jobs:
 
           Telefonunuzdaki uygulamanın bu koddan üretildiğini doğrulamak için \`verify/\` klasöründeki scripti çalıştırın."
 
+          gh release delete "$TAG" --yes 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
           gh release create "$TAG" \
             --title "$TITLE" \
             --notes "$BODY" \
