@@ -79,27 +79,103 @@ jobs:
 
       - name: Generate Build Transparency Report
         run: |
-          echo "### VerifyBlind Deterministic Build Transparency Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** [\`${{ github.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version:** $VERSION_NAME (Build $VERSION_CODE)" >> $GITHUB_STEP_SUMMARY
-          echo "- **SOURCE_DATE_EPOCH:** $SOURCE_DATE_EPOCH" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### DEX Hash'leri:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          S="$GITHUB_STEP_SUMMARY"
+
+          echo "### VerifyBlind Deterministic Build Transparency Report" >> $S
+          echo "" >> $S
+          echo "| Alan | Değer |" >> $S
+          echo "|------|-------|" >> $S
+          echo "| **Versiyon** | $VERSION_NAME (Build $VERSION_CODE) |" >> $S
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](https://github.com/${{ github.repository }}/tree/${{ github.sha }}) |" >> $S
+          echo "| **Tam Commit Hash** | \`${{ github.sha }}\` |" >> $S
+          echo "" >> $S
+
+          echo "#### DEX Hash'leri" >> $S
+          echo "Aşağıdaki hash'ler bu commit'ten derlenen uygulama kodunun matematiksel özetidir." >> $S
+          echo "\`\`\`" >> $S
           for dex in $(ls extracted_dex/base/dex/*.dex | sort); do
               HASH=$(sha256sum "$dex" | awk '{print $1}')
               FILENAME=$(basename "$dex")
-              echo "$HASH  $FILENAME" >> $GITHUB_STEP_SUMMARY
+              echo "$HASH  $FILENAME" >> $S
           done
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "#### Manuel Doğrulama:" >> $GITHUB_STEP_SUMMARY
-          echo "1. \`adb shell pm path com.verifyblind.mobile\` ile APK yolunu bulun" >> $GITHUB_STEP_SUMMARY
-          echo "2. \`adb pull /data/app/.../base.apk\` ile çekin" >> $GITHUB_STEP_SUMMARY
-          echo "3. \`unzip -q base.apk \"*.dex\" -d dex && sha256sum dex/*.dex\` ile karşılaştırın" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $S
+          echo "" >> $S
+
+          echo "---" >> $S
+          echo "## Telefonunuzdaki Uygulamayı Nasıl Doğrularsınız?" >> $S
+          echo "" >> $S
+          echo "Aşağıdaki yöntemlerden birini seçin. Her ikisi de telefonun USB ile bağlı ve **USB Hata Ayıklama** açık olmasını gerektirir." >> $S
+          echo "> **USB Hata Ayıklama:** Telefon Ayarları → Geliştirici Seçenekleri → USB Hata Ayıklama" >> $S
+          echo "> Geliştirici Seçenekleri gizliyse: Ayarlar → Telefon Hakkında → Derleme Numarası'na 7 kez dokunun." >> $S
+          echo "" >> $S
+
+          echo "### Otomatik Doğrulama (Windows)" >> $S
+          echo "" >> $S
+          echo "**1.** ADB (Android Debug Bridge) kurulu değilse indirin:" >> $S
+          echo "- [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools) sayfasından Windows sürümünü indirin" >> $S
+          echo "- ZIP'i açın, içindeki klasörü \`C:\\platform-tools\` gibi bir yere çıkarın" >> $S
+          echo "- Windows Arama → \"Ortam Değişkenleri\" → Path'e \`C:\\platform-tools\` ekleyin" >> $S
+          echo "" >> $S
+          echo "**2.** Doğrulama scriptini indirin:" >> $S
+          echo "- [verify-windows.ps1](http://cdn.verifyblind.com/autoverifyscripts/verify-windows.ps1)" >> $S
+          echo "" >> $S
+          echo "**3.** PowerShell açın ve scripti çalıştırın:" >> $S
+          echo "\`\`\`powershell" >> $S
+          echo "./verify-windows.ps1" >> $S
+          echo "\`\`\`" >> $S
+          echo "> Script ilk kez çalışmıyorsa: PowerShell'de \`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned\` yazıp tekrar deneyin." >> $S
+          echo "" >> $S
+
+          echo "### Otomatik Doğrulama (macOS / Linux)" >> $S
+          echo "" >> $S
+          echo "**1.** ADB kurun:" >> $S
+          echo "\`\`\`bash" >> $S
+          echo "# macOS" >> $S
+          echo "brew install android-platform-tools" >> $S
+          echo "" >> $S
+          echo "# Ubuntu / Debian" >> $S
+          echo "sudo apt install adb" >> $S
+          echo "\`\`\`" >> $S
+          echo "" >> $S
+          echo "**2.** Doğrulama scriptini indirin ve çalıştırın:" >> $S
+          echo "\`\`\`bash" >> $S
+          echo "curl -O http://cdn.verifyblind.com/autoverifyscripts/verify-unix.sh" >> $S
+          echo "chmod +x verify-unix.sh" >> $S
+          echo "./verify-unix.sh" >> $S
+          echo "\`\`\`" >> $S
+          echo "" >> $S
+
+          echo "### Manuel Doğrulama (İleri Düzey)" >> $S
+          echo "" >> $S
+          echo "**1.** ADB'yi kurun (yukarıdaki adımlara bakın)" >> $S
+          echo "" >> $S
+          echo "**2.** Telefondaki APK yolunu öğrenin:" >> $S
+          echo "\`\`\`bash" >> $S
+          echo "adb shell pm path com.verifyblind.mobile" >> $S
+          echo "\`\`\`" >> $S
+          echo "Çıktı örneği: \`package:/data/app/~~XxXx==/com.verifyblind.mobile-XxXx==/base.apk\`" >> $S
+          echo "" >> $S
+          echo "**3.** APK'yı bilgisayarınıza çekin (\`package:\` önekini kaldırarak yolu kullanın):" >> $S
+          echo "\`\`\`bash" >> $S
+          echo "adb pull /data/app/~~XxXx==/com.verifyblind.mobile-XxXx==/base.apk base.apk" >> $S
+          echo "\`\`\`" >> $S
+          echo "" >> $S
+          echo "**4.** DEX dosyalarını çıkarıp hash'leyin:" >> $S
+          echo "\`\`\`bash" >> $S
+          echo "# macOS / Linux" >> $S
+          echo "unzip -q base.apk \"*.dex\" -d dex && sha256sum dex/*.dex" >> $S
+          echo "\`\`\`" >> $S
+          echo "\`\`\`powershell" >> $S
+          echo "# Windows PowerShell" >> $S
+          echo "Expand-Archive base.apk dex" >> $S
+          echo "Get-ChildItem dex\\*.dex | ForEach-Object { (Get-FileHash \$_ -Algorithm SHA256).Hash.ToLower() + \"  \" + \$_.Name }" >> $S
+          echo "\`\`\`" >> $S
+          echo "" >> $S
+          echo "**5.** Çıktıdaki hash'leri bu sayfanın üstündeki **DEX Hash'leri** tablosuyla karşılaştırın — tüm satırlar birebir eşleşmeli." >> $S
 
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch'
+        env:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="build-$VERSION_CODE"
