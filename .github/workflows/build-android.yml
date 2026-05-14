@@ -198,7 +198,8 @@ jobs:
             --title "$TITLE" \
             --notes "$BODY" \
             --repo "${{ github.repository }}" \
-            dex-hashes.json
+            dex-hashes.json \
+            app/build/outputs/bundle/release/app-release.aab
 
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v7
