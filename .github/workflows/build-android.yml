@@ -111,18 +111,14 @@ jobs:
 
           echo "### Otomatik Doğrulama (Windows)" >> $S
           echo "" >> $S
-          echo "**1.** ADB (Android Debug Bridge) kurulu değilse indirin:" >> $S
-          echo "- [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools) sayfasından Windows sürümünü indirin" >> $S
-          echo "- ZIP'i açın, içindeki klasörü \`C:\\platform-tools\` gibi bir yere çıkarın" >> $S
-          echo "- Windows Arama → \"Ortam Değişkenleri\" → Path'e \`C:\\platform-tools\` ekleyin" >> $S
-          echo "" >> $S
-          echo "**2.** Doğrulama scriptini indirin:" >> $S
+          echo "**1.** Doğrulama scriptini indirin:" >> $S
           echo "- [verify-windows.ps1](http://cdn.verifyblind.com/autoverifyscripts/verify-windows.ps1)" >> $S
           echo "" >> $S
-          echo "**3.** PowerShell açın ve scripti çalıştırın:" >> $S
+          echo "**2.** PowerShell açın ve scripti çalıştırın:" >> $S
           echo "\`\`\`powershell" >> $S
           echo "./verify-windows.ps1" >> $S
           echo "\`\`\`" >> $S
+          echo "> ADB (telefon bağlantısı için gerekli araç) sisteminizde yoksa script otomatik olarak indirip kurar — sizden bir şey yapmanız beklenmiyor." >> $S
           echo "> Script ilk kez çalışmıyorsa: PowerShell'de \`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned\` yazıp tekrar deneyin." >> $S
           echo "" >> $S
 
@@ -145,6 +141,12 @@ jobs:
           echo "\`\`\`" >> $S
           echo "" >> $S
 
+          echo "---" >> $S
+          echo "" >> $S
+          echo "**Ekranda gördükleriniz ne anlama geliyor ve neden güvenebilirsiniz?** Script önce uygulamanızın versiyon ve commit hash'ini doğrudan telefonun belleğinden okur — bu değerler bu sayfanın üstündekiyle aynı olmalıdır. Sonra telefondaki APK'nın içindeki her \`classes*.dex\` dosyasının SHA-256 kriptografik özetini hesaplayıp GitHub Release'inde yayınlanan beklenen hash'lerle karşılaştırır. Her satırın yanındaki **ESLESTI** yazısı, telefonunuzdaki o kod parçasının bit-bit GitHub'daki kodla aynı olduğunu kanıtlar; son ekrandaki yeşil **DOGRULAMA BASARILI** mesajı ise uygulamayı çalıştıran kodun tamamen üstte gördüğünüz commit'ten derlendiğini matematiksel olarak garanti eder." >> $S
+          echo "" >> $S
+          echo "Bu doğrulamada VerifyBlind'in iddialarına değil, matematiğin kendisine güveniyorsunuz: scriptin her satırını çalıştırmadan önce açıp okuyabilirsiniz, karşılaştırılan hash'ler GitHub Actions'ın değiştirilemez build kayıtlarından geliyor ve SHA-256 öyle bir özet fonksiyondur ki farklı bir kodun aynı hash'i üretmesi pratik olarak imkânsızdır. Aradaki herhangi bir adımda — build sunucusu, dağıtım kanalı, hatta cihazınızın depolama alanı — farklı bir kod gizlenmiş olsaydı eşleşme olmazdı." >> $S
+          echo "" >> $S
           echo "### Manuel Doğrulama (İleri Düzey)" >> $S
           echo "" >> $S
           echo "**1.** ADB'yi kurun (yukarıdaki adımlara bakın)" >> $S

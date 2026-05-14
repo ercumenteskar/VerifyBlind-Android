@@ -20,7 +20,7 @@ versionProps.load(FileInputStream(versionPropsFile))
 
 val currentVersionCode = versionProps["versionCode"].toString().toInt()
 
-val currentVersionName = "1.0.10" 
+val currentVersionName = "1.0.10"
 
 android {
     namespace = "com.verifyblind.mobile"
@@ -28,7 +28,7 @@ android {
 
     val kimlikPropsFile = file("../verifyblind.properties")
     val kimlikProps = Properties()
-    if (kimlikPropsFile.exists()) {
+    if (kimlikPropsFile.exists()) { 
         kimlikProps.load(FileInputStream(kimlikPropsFile))
     }
 

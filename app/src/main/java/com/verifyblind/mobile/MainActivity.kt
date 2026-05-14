@@ -170,9 +170,6 @@ class MainActivity : BaseActivity() {
         val prefs = getSharedPreferences("VerifyBlind_Prefs", Context.MODE_PRIVATE)
         Log.i("VerifyBlind_Debug", "MainActivity onCreate: Wallet State [HasTicket=${prefs.contains("ticket")}, HasKey=${prefs.contains("userPubKey")}]")
 
-        // Check for force update
-        viewModel.checkAppUpdate()
-
         // Background Handshake
         lifecycleScope.launch {
             viewModel.performHandshake(this@MainActivity)
@@ -209,6 +206,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        viewModel.checkAppUpdate()
         checkBiometricLogin()
         val intent = Intent(this, javaClass).apply {
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)

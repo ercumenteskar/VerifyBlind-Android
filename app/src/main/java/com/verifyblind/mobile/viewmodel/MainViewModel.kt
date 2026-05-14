@@ -177,6 +177,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     suspend fun performHandshake(context: Context) = withContext(Dispatchers.IO) {
         if (isHandshaking) return@withContext
+        // Security gate: outdated APKs must not perform handshake.
+        if (isAppOutdated()) return@withContext
         isHandshaking = true
         _isHandshakeSuccessful = false
         handshakeCompletedAt = 0L
@@ -788,21 +790,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     // ──────────────────────── App Update ────────────────────────
 
-    fun checkAppUpdate() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val response = RetrofitClient.api.getAppConfig()
-                if (response.isSuccessful && response.body() != null) {
-                    val config = response.body()!!
-                    val currentVersion = com.verifyblind.mobile.BuildConfig.VERSION_NAME
-                    if (isVersionOlder(currentVersion, config.minimumAndroidVersion)) {
-                        _uiEvent.postValue(UiEvent.ForceUpdate(config.storeUrl))
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("VerifyBlind", "Güncelleme kontrolü başarısız: ${e.message}")
+    /**
+     * Returns true if the installed APK is older than MINIMUM_ANDROID_VERSION.
+     * Caller MUST bail out when true — the force-update dialog will be posted.
+     * On network error returns false (fail-open): server is unreachable, so we
+     * cannot prove the client is outdated; subsequent API calls will fail anyway.
+     */
+    suspend fun isAppOutdated(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val response = RetrofitClient.api.getAppConfig()
+            if (!response.isSuccessful || response.body() == null) return@withContext false
+            val config = response.body()!!
+            val currentVersion = com.verifyblind.mobile.BuildConfig.VERSION_NAME
+            if (isVersionOlder(currentVersion, config.minimumAndroidVersion)) {
+                _uiEvent.postValue(UiEvent.ForceUpdate(config.storeUrl))
+                true
+            } else {
+                false
             }
+        } catch (e: Exception) {
+            Log.e("VerifyBlind", "Güncelleme kontrolü başarısız: ${e.message}")
+            false
         }
+    }
+
+    /** Fire-and-forget wrapper for lifecycle callbacks (onResume). */
+    fun checkAppUpdate() {
+        viewModelScope.launch { isAppOutdated() }
     }
 
     fun isVersionOlder(current: String, minimum: String): Boolean {
