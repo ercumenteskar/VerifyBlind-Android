@@ -34,16 +34,32 @@ jobs:
       - name: Make scripts executable
         run: chmod +x gradlew
 
+      - name: Auto-increment versionCode
+        run: |
+          CURRENT=$(grep versionCode app/version.properties | cut -d= -f2 | tr -d '[:space:]')
+          NEW=$((CURRENT + 1))
+          sed -i "s/versionCode=$CURRENT/versionCode=$NEW/" app/version.properties
+          echo "NEW_VERSION_CODE=$NEW" >> $GITHUB_ENV
+          echo "versionCode: $CURRENT → $NEW"
+
+      - name: Commit & push versionCode bump
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/version.properties
+          git commit -m "ci: bump versionCode to $NEW_VERSION_CODE [skip ci]"
+          git push
+
       - name: Build Unsigned AAB
         run: ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 --no-daemon
 
       - name: Read Version Info
         run: |
-          VERSION_CODE=$(grep versionCode app/version.properties | cut -d= -f2 | tr -d '[:space:]')
           VERSION_NAME=$(grep -o 'currentVersionName = "[^"]*"' app/build.gradle.kts | cut -d'"' -f2)
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "VERSION_CODE=$NEW_VERSION_CODE" >> $GITHUB_ENV
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo ">>> Version: $VERSION_NAME (Build $VERSION_CODE)"
+          echo ">>> Version: $VERSION_NAME (Build $NEW_VERSION_CODE)"
 
       - name: Extract DEX Hashes & Generate dex-hashes.json
         run: |
