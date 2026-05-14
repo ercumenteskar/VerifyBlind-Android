@@ -2,7 +2,7 @@ name: Mobile Release Build (Deterministic & Code Transparency)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] 
   pull_request:
 
 jobs:
