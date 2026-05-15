@@ -60,6 +60,10 @@ class CameraManager(
             binding.viewFlipper.visibility = View.VISIBLE
             binding.mainNavHost.visibility = View.GONE
             binding.viewFlipper.displayedChild = 2
+            // Overlay'i kamera moduyla aynı yerde, kameranın gerçekten başladığı anda
+            // ayarla. Caller'a bırakılınca bir önceki akıştan (örn. kart ekleme MRZ modu)
+            // kalan overlay QR taramaya sızabiliyordu.
+            setCameraOverlay(isQr)
 
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder()

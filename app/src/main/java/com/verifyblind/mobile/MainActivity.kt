@@ -8,7 +8,6 @@ import android.nfc.Tag
 import android.os.Bundle
 import android.util.Base64
 import android.util.Log
-import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -80,13 +79,6 @@ class MainActivity : BaseActivity() {
 
     // NFC progress animation job (20→90 over ~10s while reading)
     private var nfcProgressJob: kotlinx.coroutines.Job? = null
-
-    // Bildirim izni dialog'u açıkken altındaki butonların tıklanmasını engellemek için.
-    // Tap-jacking koruması: sistem dialog'u kapanırken sızan touch event'leri yutmak için
-    // callback'te 250ms gecikmeyle clear edilir.
-    @Volatile
-    var isPermissionRequestInFlight: Boolean = false
-        private set
 
     private val livenessLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
@@ -192,10 +184,7 @@ class MainActivity : BaseActivity() {
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
-        // Dialog kapandıktan sonra altta sızan touch event'lerini yutmak için kısa gecikme
-        window.decorView.postDelayed({ isPermissionRequestInFlight = false }, 250)
-    }
+    ) { /* izin verildi/reddedildi — bildirimler yine de çalışır, sadece gösterilmez */ }
 
     /** Bildirim kanalını oluşturur — UI göstermez, onCreate'te güvenle çağrılabilir. */
     private fun setupNotifications() {
@@ -212,27 +201,16 @@ class MainActivity : BaseActivity() {
 
     /**
      * POST_NOTIFICATIONS iznini ister. onCreate'te DEĞİL, kart ekleme akışı
-     * tamamlandıktan sonra çağrılır — aksi halde sistem dialog'u wallet ekranındaki
-     * butonların üstüne gelip tap-through'a yol açıyordu.
+     * tamamlandıktan sonra çağrılır — kullanıcı yeni bir akışı henüz başlatmadan
+     * iste, böylece dialog wallet'taki ana CTA'ların önüne düşmesin.
      */
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 != PackageManager.PERMISSION_GRANTED) {
-                isPermissionRequestInFlight = true
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-    }
-
-    /**
-     * Bildirim izni dialog'u açık/yeni kapanmışken sızan touch event'lerini Activity
-     * sınırında yutar. Tek tek buton guard'larından daha güvenli — sızan event hangi
-     * view'a giderse gitsin click'e dönüşmeden tüketilir.
-     */
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        if (isPermissionRequestInFlight) return true
-        return super.dispatchTouchEvent(ev)
     }
 
     override fun onResume() {
@@ -831,6 +809,10 @@ class MainActivity : BaseActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        // Sadece kamera izni request'lerini handle et. ActivityResultLauncher API'sı da bu
+        // callback'i tetikliyor; filtre olmayınca POST_NOTIFICATIONS gibi alakasız izinler
+        // verildiğinde de buraya düşüp kamerayı yanlış modda başlatıyorduk.
+        if (requestCode != 1001 && requestCode != 1002) return
         if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
             startCameraWithCallbacks(requestCode == 1002)
         } else {

@@ -572,7 +572,9 @@ class LivenessActivity : BaseActivity() {
                      // UPDATE UI PERMANENTLY WITH MAX SCORE (INTEGER)
                      // Use bestSavedMatchScore or bestMatchScore? bestMatchScore tracks session max.
                      val scorePercent = (bestMatchScore * 100).toInt()
-                     val color = if (scorePercent >= (MATCH_THRESHOLD * 100).toInt()) android.graphics.Color.GREEN else android.graphics.Color.RED
+                     val color = if (scorePercent >= (MATCH_THRESHOLD * 100).toInt())
+                         ContextCompat.getColor(this@LivenessActivity, R.color.success)
+                     else android.graphics.Color.RED
                      val finalMsg = "%d%%".format(scorePercent)
                      
                      runOnUiThread {
@@ -689,7 +691,7 @@ class LivenessActivity : BaseActivity() {
 
                         // Logic fix: Green if good score, even if timeout happened
                         if (scorePercent >= (MATCH_THRESHOLD * 100).toInt()) {
-                            tvScore.setTextColor(android.graphics.Color.GREEN)
+                            tvScore.setTextColor(ContextCompat.getColor(this@LivenessActivity, R.color.success))
                         } else {
                             tvScore.setTextColor(android.graphics.Color.RED)
                         }
